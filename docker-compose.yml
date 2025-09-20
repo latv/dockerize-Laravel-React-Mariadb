@@ -1,18 +1,16 @@
-version: '3.8'
-
 services:
   # MariaDB Database
   mariadb:
     image: mariadb:10.11
-    container_name: laravel_mariadb
+    container_name: maria_db
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: laravel_db
-      MYSQL_USER: laravel_user
-      MYSQL_PASSWORD: laravel_password
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     ports:
-      - "3306:3306"
+      - "${MARIADB_PORT}:3306"
     volumes:
       - mariadb_data:/var/lib/mysql
     networks:
@@ -23,20 +21,21 @@ services:
     build:
       context: ./api
       dockerfile: Dockerfile
-    container_name: laravel_api
+    container_name: api
     restart: unless-stopped
     working_dir: /var/www/html
     volumes:
       - ./api:/var/www/html
       - ./api/storage:/var/www/html/storage
     environment:
-      DB_HOST: mariadb
-      DB_DATABASE: laravel_db
-      DB_USERNAME: laravel_user
-      DB_PASSWORD: laravel_password
-      APP_URL: http://localhost:8000
+      DB_HOST: ${DB_HOST}
+      DB_DATABASE: ${DB_DATABASE}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      APP_URL: ${APP_URL}
+      APP_KEY: ${APP_KEY}
     ports:
-      - "8000:8000"
+      - "${API_PORT}:8000"
     depends_on:
       - mariadb
     networks:
@@ -47,16 +46,16 @@ services:
     build:
       context: ./spa
       dockerfile: Dockerfile
-    container_name: react_spa
+    container_name: spa
     restart: unless-stopped
     working_dir: /app
     volumes:
       - ./spa:/app
       - /app/node_modules
     ports:
-      - "3000:3000"
+      - "${SPA_PORT}:3000"
     environment:
-      - REACT_APP_API_URL=http://localhost:8000/api
+      - REACT_APP_API_URL=${REACT_APP_API_URL}
     depends_on:
       - api
     networks:
